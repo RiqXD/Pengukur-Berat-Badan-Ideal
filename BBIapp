@@ -1,0 +1,155 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(BBIApp());
+}
+
+class BBIApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: InputDataPage(),
+    );
+  }
+}
+
+class InputDataPage extends StatefulWidget {
+  @override
+  InputPageState createState() => InputPageState();
+}
+
+class InputPageState extends State<InputDataPage> {
+  final TextEditingController tinggiController = TextEditingController();
+  final TextEditingController beratController = TextEditingController();
+  String jenisKelamin = 'Laki-laki';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Pengukur Berat Badan Ideal'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            DropdownButton<String>(
+              value: jenisKelamin,
+              onChanged: (String? newValue) {
+                setState(() {
+                  jenisKelamin = newValue!;
+                });
+              },
+              items: <String>['Laki-laki', 'Perempuan']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            TextField(
+              controller: tinggiController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: 'Tinggi (cm)'),
+            ),
+            TextField(
+              controller: beratController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: 'Berat (kg)'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                double tinggi = double.tryParse(tinggiController.text) ?? 0;
+                double berat = double.tryParse(beratController.text) ?? 0;
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => HasilPage(
+                        jenisKelamin: jenisKelamin,
+                        tinggi: tinggi,
+                        berat: berat)));
+              },
+              child: Text('Done'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HasilPage extends StatelessWidget {
+  final String jenisKelamin;
+  final double tinggi;
+  final double berat;
+
+  HasilPage(
+      {required this.jenisKelamin, required this.tinggi, required this.berat});
+
+  @override
+  Widget build(BuildContext context) {
+    double beratBadanIdeal;
+    if (jenisKelamin == 'Laki-laki') {
+      beratBadanIdeal = (tinggi - 100) - ((tinggi - 100) * 0.10);
+    } else {
+      beratBadanIdeal = (tinggi - 100) - ((tinggi - 100) * 0.15);
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hasil Berat Badan Ideal'),
+      ),
+      body: Center(
+        child: Container(
+          width: 250,
+          height: 160,
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Jenis Kelamin: $jenisKelamin',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Tinggi: $tinggi cm',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Berat: $berat kg',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Berat Badan Ideal: $beratBadanIdeal kg',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Status: ${getStatus(berat, beratBadanIdeal)}',
+                style: TextStyle(color: Colors.white),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Kembali'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String getStatus(double berat, double Ideal) {
+    if (berat < Ideal) {
+      return 'Kurus';
+    } else if (berat > Ideal) {
+      return 'Gemuk';
+    } else {
+      return 'Ideal';
+    }
+  }
+}
